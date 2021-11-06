@@ -29,7 +29,7 @@ node app.js
 'your site or 127.0.0.1'/stream/n95eekfFZZg.mp3
 ```
 In ```ytsearch``` you get a link to this query, example getting a response from ```ytsearch```:
-```
+```js
 {
   "link": "http://astro-tyan.ejemplo.me/stream/n95eekfFZZg.mp3", // link to listen to the converted video in mp3 via ytsearch
   "list": {
