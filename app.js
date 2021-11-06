@@ -156,5 +156,5 @@ app.get('/rand', (req, res) => {
 });
 
 app.listen(port, function(){
-    console.log('Сервер запущен по адресу - 127.0.0.1:' + port);
+    console.log('Сервер запущен по адресу - ' + domain + ':' + port);
 });
