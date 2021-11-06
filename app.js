@@ -6,8 +6,8 @@ const cmd = require('node-cmd');
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 
 const songs = JSON.parse(fs.readFileSync('./music/playlist.json', 'utf8'));
-const domain = 'http://astro-tyan.ejemplo.me'; // Свой домен
-const port = 6660; // Свой порт
+const domain = '127.0.0.1'; // Свой домен/хост и т.д.
+const port = 1234; // Свой порт
 
 const app = express();
 // Поиск, конвертация, ссылки и прочее
