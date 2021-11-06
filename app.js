@@ -107,7 +107,7 @@ app.get('/ytsearch', async (req, res) => {
         }
     }
 });
-// Прослушивания музыки
+// Прослушивание музыки
 app.get('/stream/:id' + '.mp3', (req, res) => {
     const id = req.params.id;
 
