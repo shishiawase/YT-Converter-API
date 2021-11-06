@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "express": "^4.17.1",
+    "node-cmd": "^5.0.0",
+    "yt-search": "^2.10.2"
+  }
+}
