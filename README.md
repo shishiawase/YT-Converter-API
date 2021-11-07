@@ -31,8 +31,9 @@ node app.js
 In ```ytsearch``` you get a link to this query, example getting a response from ```ytsearch```:
 ```js
 {
-  "link": "http://astro-tyan.ejemplo.me/stream/n95eekfFZZg.mp3", // link to listen to the converted video in mp3 via ytsearch
-  "list": {
+  "title": "Cage The Elephant - Cold Cold Cold",
+  "link": "127.0.0.1/stream/n95eekfFZZg.mp3", // link to listen to the converted video in mp3 via ytsearch
+  "searchlist": {
   // list of 5 videos found by name
     "1": {
       "id": "n95eekfFZZg",
@@ -59,8 +60,7 @@ In ```ytsearch``` you get a link to this query, example getting a response from 
       "time": "1:00:06",
       "title": "Hot And Cold | Opposites Song + More Little Angel Educational Kids Songs & Nursery Rhymes"
     }
-  },
-  "title": "Cage The Elephant - Cold Cold Cold"
+  }
 }
 ```
 #### random link to listen to a song from previously converted ####
