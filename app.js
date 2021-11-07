@@ -59,21 +59,21 @@ app.get('/ytsearch', async (req, res) => {
                          title: videos[0].title,
                          link: domain + '/stream/' + videos[0].videoId + '.mp3'
                     };
+                    // Добавляем в плейлист
+                    fs.writeFile('./music/playlist.json', JSON.stringify(songs), () => console.log(videos[0].title + ' сохранена в плейлист.'));
                     // Список из первых найденных 5
                     if (Object.keys(videos).length > 1) {
                         let num = 0;
-                        songs[videos[0].videoId].list = {};
+                        songs[videos[0].videoId].searchlist = {};
 
                         for (i = 0; i < videos.length; ++i) {
-                            songs[videos[0].videoId].list[i + 1] = {
+                            songs[videos[0].videoId].searchlist[i + 1] = {
                                 title: videos[i].title,
                                 time: videos[i].timestamp,
                                 id: videos[i].videoId
                             }
                         }
                     }
-                    // Добавляем в плейлист
-                    fs.writeFile('./music/playlist.json', JSON.stringify(songs), () => console.log(videos[0].title + ' сохранена в плейлист.'));
                     // Если в списке не больше 1000 треков, просто добавляем и отправляем ссылку
                     if (Object.keys(songs).length < 1000) {
 
