@@ -6,11 +6,11 @@ const cmd = require('node-cmd');
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 
 const songs = JSON.parse(fs.readFileSync('./music/playlist.json', 'utf8'));
-const domain = 'http://127.0.0.1'; // Свой домен/хост и т.д.
-const port = 1234; // Свой порт
+const host = 'http://127.0.0.1'; // Your domain/host, etc.
+const port = 1234; // Your port
 
 const app = express();
-// Поиск, конвертация, ссылки и прочее
+// Search, conversion, links, etc.
 app.get('/ytsearch', async (req, res) => {
 
     if (!req.query.title) {
@@ -23,20 +23,20 @@ app.get('/ytsearch', async (req, res) => {
         const reLink = new RegExp(/\?v=|be\//g);
         var result;
         var videos;
-        // Смотрим есть ли ссылка на видео
+        // See if there is a link to the video
         if (title.match(reLink)) {
-            // Поиск по id если есть ссылка
+            // Search by id if there is a link
             result = await yts({ videoId: title.substring(title.search(reLink) + 3) });
             videos = [result];
         } else {
-            // Поиск по названию
+            // Search by title
             result = await yts(title);
             videos = result.videos.slice(0,5);
         }
 
         if (songs[videos[0].videoId]) {
 
-            console.log('Найдено совпадение.');
+            console.log('A match was found.');
             console.log('Send ok.');
             res.send(songs[videos[0].videoId]);
 
@@ -44,8 +44,8 @@ app.get('/ytsearch', async (req, res) => {
 
             if (videos[0].seconds > 900) {
 
-                console.log('Видео больше 15 минут, получаем прямую ссылку на файл...');
-                // Если видео больше 15 минут, берем прямую ссылку с ютуба на webm файл
+                console.log('The video is more than 15 minutes, we get a direct link to the file...');
+                // If the video is more than 15 minutes, we take a direct link from YouTube to a webm file
                 cmd.run("yt-dlp -f \"ba*[ext=webm]\" --write-info-json --skip-download https://www.youtube.com/watch?v=" + videos[0].videoId + " -o \"./music/yt\"", (err, data, stderr) => {
                     if (!err) {
                         let info = JSON.parse(fs.readFileSync('./music/yt.info.json', 'utf8'));
@@ -58,17 +58,17 @@ app.get('/ytsearch', async (req, res) => {
                     }
                 });
             } else {
-                // Запускаем скачку и конвертер в mp3 через cmd
+                // Launch the download and the mp3 converter via cmd
                 cmd.run("yt-dlp -f \"ba\" -x --audio-format mp3 --ffmpeg-location " + ffmpegPath + " https://www.youtube.com/watch?v=" + videos[0].videoId + " -o \"./music/%(id)s.mp3\"", (err, data, stderr) => {
                     if (!err) {
-                        // Упаковываем название и ссылку на файл
+                        // Packing the name and the link to the file
                         songs[videos[0].videoId] = {
                              title: videos[0].title,
-                             link: domain + '/stream/' + videos[0].videoId + '.mp3'
+                             link: host + '/stream/' + videos[0].videoId + '.mp3'
                         };
-                        // Добавляем в плейлист
-                        fs.writeFile('./music/playlist.json', JSON.stringify(songs), () => console.log(videos[0].title + ' сохранена в плейлист.'));
-                        // Список из первых найденных 5
+                        // Add playlist
+                        fs.writeFile('./music/playlist.json', JSON.stringify(songs), () => console.log(videos[0].title + ' saved in playlist.'));
+                        // List of the first 5 found
                         if (Object.keys(videos).length > 1) {
                             let num = 0;
                             songs[videos[0].videoId].searchlist = {};
@@ -81,23 +81,23 @@ app.get('/ytsearch', async (req, res) => {
                                 }
                             }
                         }
-                        // Если в списке не больше 1000 треков, просто добавляем и отправляем ссылку
+                        // If there are no more than 1000 tracks in the list, just add and send the link
                         if (Object.keys(songs).length < 1000) {
 
                             console.log('Send ok.');
                             res.send(songs[videos[0].videoId]);
 
                         } else {
-                            // Если треков больше 1000, то удаляем 1 самый старый
+                            // If there are more than 1000 tracks, then delete the 1 oldest one
                             let id = Object.keys(songs)[0];
-                            // Путь к аудиофайлу и название
+                            // The path to the audio file and the name
                             let pathSong = './music/' + id + '.mp3';
                             let titleSong = songs[id].title;
 
                             fs.unlink(pathSong, (error) => {
                                 if (!error) {
                                     delete songs[id];
-                                    console.log(titleSong + ' удалена.');
+                                    console.log(titleSong + ' deleted.');
                                 } else {
                                     console.error(error);
                                 }
@@ -115,7 +115,7 @@ app.get('/ytsearch', async (req, res) => {
         }
     }
 });
-// Прослушивание музыки
+// Sreaming music
 app.get('/stream/:id' + '.mp3', (req, res) => {
     const id = req.params.id;
 
@@ -156,7 +156,7 @@ app.get('/stream/:id' + '.mp3', (req, res) => {
 
     readStream.pipe(res);
 });
-// Рандомная песня из заказанных ранее
+// Random song from previously ordered
 app.get('/rand', (req, res) => {
     let randSong = Object.keys(songs)[Math.floor(Math.random() * Object.keys(songs).length)];
 
@@ -164,5 +164,5 @@ app.get('/rand', (req, res) => {
 });
 
 app.listen(port, function(){
-    console.log('Сервер запущен по адресу - ' + domain + ':' + port);
+    console.log('The server is running at - ' + host + ':' + port);
 });
