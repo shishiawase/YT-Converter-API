@@ -35,6 +35,7 @@ app.get('/ytsearch', async (req, res) => {
         }
 
         if (songs[videos[0].videoId]) {
+            songs[videos[0].videoId].searchlist = {};
             
             for (i = 0; i < videos.length; ++i) {
                 songs[videos[0].videoId].searchlist[i + 1] = {
