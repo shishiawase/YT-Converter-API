@@ -6,104 +6,112 @@ const cmd = require('node-cmd');
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
 
 const songs = JSON.parse(fs.readFileSync('./music/playlist.json', 'utf8'));
-const domain = '127.0.0.1'; // Свой домен/хост и т.д.
+const domain = 'http://127.0.0.1'; // Свой домен/хост и т.д.
 const port = 1234; // Свой порт
 
 const app = express();
 // Поиск, конвертация, ссылки и прочее
 app.get('/ytsearch', async (req, res) => {
-    const title = req.query.title;
-    const reLink = new RegExp(/\?v=|be\//g);
-    var result;
-    var videos;
-    // Смотрим есть ли ссылка на видео
-    if (title.match(reLink)) {
-        // Поиск по id если есть ссылка
-        result = await yts({ videoId: title.substring(title.search(reLink) + 3) });
-        videos = [result];
-    } else {
-        // Поиск по названию
-        result = await yts(title);
-        videos = result.videos.slice(0,5);
-    }
 
-    if (songs[videos[0].videoId]) {
+    if (!req.query.title) {
 
-        console.log('Найдено совпадение.');
-        console.log('Send ok.');
-        res.send(songs[videos[0].videoId]);
+        res.send('Cannot GET /ytsearch');
 
     } else {
 
-        if (videos[0].seconds > 900) {
-
-            console.log('Видео больше 15 минут, получаем прямую ссылку на файл...');
-            // Если видео больше 15 минут, берем прямую ссылку с ютуба на webm файл
-            cmd.run("yt-dlp -f \"ba*[ext=webm]\" --write-info-json --skip-download https://www.youtube.com/watch?v=" + videos[0].videoId + " -o \"./music/yt\"", (err, data, stderr) => {
-                if (!err) {
-                    let info = JSON.parse(fs.readFileSync('./music/yt.info.json', 'utf8'));
-
-                    console.log('Send ok.');
-                    res.send({ title: info.title, link: info.url });
-                } else {
-                    console.error(err);
-                    res.send('Error yt-dlp');
-                }
-            });
+        const title = req.query.title;
+        const reLink = new RegExp(/\?v=|be\//g);
+        var result;
+        var videos;
+        // Смотрим есть ли ссылка на видео
+        if (title.match(reLink)) {
+            // Поиск по id если есть ссылка
+            result = await yts({ videoId: title.substring(title.search(reLink) + 3) });
+            videos = [result];
         } else {
-            // Запускаем скачку и конвертер в mp3 через cmd
-            cmd.run("yt-dlp -f \"ba\" -x --audio-format mp3 --ffmpeg-location " + ffmpegPath + " https://www.youtube.com/watch?v=" + videos[0].videoId + " -o \"./music/%(id)s.mp3\"", (err, data, stderr) => {
-                if (!err) {
-                    // Упаковываем название и ссылку на файл
-                    songs[videos[0].videoId] = {
-                         title: videos[0].title,
-                         link: domain + '/stream/' + videos[0].videoId + '.mp3'
-                    };
-                    // Добавляем в плейлист
-                    fs.writeFile('./music/playlist.json', JSON.stringify(songs), () => console.log(videos[0].title + ' сохранена в плейлист.'));
-                    // Список из первых найденных 5
-                    if (Object.keys(videos).length > 1) {
-                        let num = 0;
-                        songs[videos[0].videoId].searchlist = {};
+            // Поиск по названию
+            result = await yts(title);
+            videos = result.videos.slice(0,5);
+        }
 
-                        for (i = 0; i < videos.length; ++i) {
-                            songs[videos[0].videoId].searchlist[i + 1] = {
-                                title: videos[i].title,
-                                time: videos[i].timestamp,
-                                id: videos[i].videoId
+        if (songs[videos[0].videoId]) {
+
+            console.log('Найдено совпадение.');
+            console.log('Send ok.');
+            res.send(songs[videos[0].videoId]);
+
+        } else {
+
+            if (videos[0].seconds > 900) {
+
+                console.log('Видео больше 15 минут, получаем прямую ссылку на файл...');
+                // Если видео больше 15 минут, берем прямую ссылку с ютуба на webm файл
+                cmd.run("yt-dlp -f \"ba*[ext=webm]\" --write-info-json --skip-download https://www.youtube.com/watch?v=" + videos[0].videoId + " -o \"./music/yt\"", (err, data, stderr) => {
+                    if (!err) {
+                        let info = JSON.parse(fs.readFileSync('./music/yt.info.json', 'utf8'));
+
+                        console.log('Send ok.');
+                        res.send({ title: info.title, link: info.url });
+                    } else {
+                        console.error(err);
+                        res.send('Error yt-dlp');
+                    }
+                });
+            } else {
+                // Запускаем скачку и конвертер в mp3 через cmd
+                cmd.run("yt-dlp -f \"ba\" -x --audio-format mp3 --ffmpeg-location " + ffmpegPath + " https://www.youtube.com/watch?v=" + videos[0].videoId + " -o \"./music/%(id)s.mp3\"", (err, data, stderr) => {
+                    if (!err) {
+                        // Упаковываем название и ссылку на файл
+                        songs[videos[0].videoId] = {
+                             title: videos[0].title,
+                             link: domain + '/stream/' + videos[0].videoId + '.mp3'
+                        };
+                        // Добавляем в плейлист
+                        fs.writeFile('./music/playlist.json', JSON.stringify(songs), () => console.log(videos[0].title + ' сохранена в плейлист.'));
+                        // Список из первых найденных 5
+                        if (Object.keys(videos).length > 1) {
+                            let num = 0;
+                            songs[videos[0].videoId].searchlist = {};
+
+                            for (i = 0; i < videos.length; ++i) {
+                                songs[videos[0].videoId].searchlist[i + 1] = {
+                                    title: videos[i].title,
+                                    time: videos[i].timestamp,
+                                    id: videos[i].videoId
+                                }
                             }
                         }
-                    }
-                    // Если в списке не больше 1000 треков, просто добавляем и отправляем ссылку
-                    if (Object.keys(songs).length < 1000) {
+                        // Если в списке не больше 1000 треков, просто добавляем и отправляем ссылку
+                        if (Object.keys(songs).length < 1000) {
 
-                        console.log('Send ok.');
-                        res.send(songs[videos[0].videoId]);
+                            console.log('Send ok.');
+                            res.send(songs[videos[0].videoId]);
 
+                        } else {
+                            // Если треков больше 1000, то удаляем 1 самый старый
+                            let id = Object.keys(songs)[0];
+                            // Путь к аудиофайлу и название
+                            let pathSong = './music/' + id + '.mp3';
+                            let titleSong = songs[id].title;
+
+                            fs.unlink(pathSong, (error) => {
+                                if (!error) {
+                                    delete songs[id];
+                                    console.log(titleSong + ' удалена.');
+                                } else {
+                                    console.error(error);
+                                }
+                            });
+
+                            console.log('Send ok.');
+                            res.send(songs[videos[0].videoId]);
+                        }
                     } else {
-                        // Если треков больше 1000, то удаляем 1 самый старый
-                        let id = Object.keys(songs)[0];
-                        // Путь к аудиофайлу и название
-                        let pathSong = './music/' + id + '.mp3';
-                        let titleSong = songs[id].title;
-
-                        fs.unlink(pathSong, (error) => {
-                            if (!error) {
-                                delete songs[id];
-                                console.log(titleSong + ' удалена.');
-                            } else {
-                                console.error(error);
-                            }
-                        });
-
-                        console.log('Send ok.');
-                        res.send(songs[videos[0].videoId]);
+                        console.error(err);
+                        res.send('Error yt-dlp');
                     }
-                } else {
-                    console.error(err);
-                    res.send('Error yt-dlp');
-                }
-            });
+                });
+            }
         }
     }
 });
