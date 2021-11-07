@@ -32,7 +32,7 @@ In ```ytsearch``` you get a link to this query, example getting a response from 
 ```js
 {
   "title": "Cage The Elephant - Cold Cold Cold",
-  "link": "127.0.0.1/stream/n95eekfFZZg.mp3", // link to listen to the converted video in mp3 via ytsearch
+  "link": "http://127.0.0.1/stream/n95eekfFZZg.mp3", // link to listen to the converted video in mp3 via ytsearch
   "searchlist": {
   // list of 5 videos found by name
     "1": {
