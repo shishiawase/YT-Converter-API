@@ -20,6 +20,7 @@ app.get('/ytsearch', async (req, res) => {
     } else {
 
         const title = req.query.title;
+        console.log(title);
         const reLink = new RegExp(/\?v=|be\//g);
         var result;
         var videos;
