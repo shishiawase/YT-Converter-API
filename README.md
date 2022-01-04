@@ -8,7 +8,7 @@ Converts YouTube videos to mp3, if the video is longer than 15 minutes, then giv
 + Install [yt-dlp](https://github.com/yt-dlp/yt-dlp)
 + Install ```node``` and ```npm``` 
 ```
-sudo apt install node npm -y 
+sudo apt install nodejs npm -y 
 ```
 + Installing dependencies 
 ```
